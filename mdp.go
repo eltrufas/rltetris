@@ -134,7 +134,7 @@ func (t *Tetrisrl) Transition(action uint32) float64 {
 	t.Tetris.Update(tetris.InputState(action))
 	scorenext := t.Tetris.Score
   reward := float64(scorenext - scoreactual)
-  if (action == 0 && t.Tetris.CurrentPiece.X <= 0) || (action == 1 && t.Tetris.CurrentPiece.X >= 9){
+  if (action == 0 && t.Tetris.CurrentPiece.X <= 1) || (action == 1 && t.Tetris.CurrentPiece.X >= 8){
     reward -= 20
   }
   if action == t.lastAction {
