@@ -112,7 +112,7 @@ func (t *Tetrisrl) GetState() []bool {
 }
 
 func (t *Tetrisrl) LegalAction() []uint32 {
-	actions := make([]uint32, 7)
+	actions := make([]uint32, 8)
 	actions[0] = 1
 	actions[1] = 2
 	actions[2] = 4
@@ -120,6 +120,8 @@ func (t *Tetrisrl) LegalAction() []uint32 {
 	actions[4] = 16
 	actions[5] = 32
 	actions[6] = 64
+  actions[7] = 0
+
 
   for i := range actions {
     j := rand.Intn(i + 1)
@@ -134,11 +136,11 @@ func (t *Tetrisrl) Transition(action uint32) float64 {
 	t.Tetris.Update(tetris.InputState(action))
 	scorenext := t.Tetris.Score
   reward := float64(scorenext - scoreactual)
-  if (action == 0 && t.Tetris.CurrentPiece.X <= 1) || (action == 1 && t.Tetris.CurrentPiece.X >= 8){
+  /*if (action == 1 && t.Tetris.CurrentPiece.X <= 0) || (action == 2 && t.Tetris.CurrentPiece.X >= 9){
     reward -= 20
-  }
+  }*/
   if action == t.lastAction {
-    reward -= 20
+    reward -= 1
   }
 
   t.lastAction = action

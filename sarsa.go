@@ -15,7 +15,7 @@ func GetGreedyAction(weights map[uint32][]float64, state []bool, actions []uint3
 }
 
 func GetEGreedyAction(w map[uint32][]float64, state []bool, actions []uint32) uint32 {
-  if rand.Float64() > 0.9 {
+  if rand.Float64() > 0.5 {
     i := rand.Intn(len(actions))
     return actions[i]
   } else {
@@ -45,7 +45,7 @@ func Sarsa(w map[uint32][]float64, episodes int, alpha, discount float64) {
 			if game.Terminal() {
 				actionWeights := w[a]
 				change := alpha * (r - Q(s, a, actionWeights))
-				for j := 0; j < len(w); j++ {
+				for j := 0; j < len(actionWeights); j++ {
           if s[j] {
             actionWeights[j] += change
           }
@@ -54,7 +54,7 @@ func Sarsa(w map[uint32][]float64, episodes int, alpha, discount float64) {
 			}
 			aPrime := GetEGreedyAction(w, sPrime, game.LegalAction())
 			actionWeights := w[a]
-			change := alpha * (r + discount*Q(sPrime, aPrime, actionWeights))
+			change := alpha * (r + discount*Q(sPrime, aPrime, actionWeights) - Q(s, a, actionWeights))
 			for j := 0; j < len(s); j++ {
         if s[j] {
           actionWeights[j] += change
