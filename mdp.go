@@ -29,8 +29,25 @@ func appendOneHot(arr []byte, min, max, val int) []byte {
 
 	return arr
 }
+
+func inscribeMask(arr []byte, mask [16]int, xpos, ypos int) {
+	for i := 0; i < 16; i++ {
+		if mask[i] == 1 {
+			y := ypos + i/4
+			x := xpos + i%4
+
+			j := x + y*10
+			if j < 0 || j >= 220 {
+				fmt.Println(mask, xpos, ypos, j, i)
+			}
+
+			arr[j] = 1
+		}
+	}
+}
+
 func GetByteState(t *tetris.Tetris) (state []byte) {
-	state = make([]byte, 0, 300)
+	state = make([]byte, 0, 720)
 	for _, val := range t.Board {
 		if val != tetris.Empty {
 			state = append(state, 1)
@@ -39,7 +56,48 @@ func GetByteState(t *tetris.Tetris) (state []byte) {
 		}
 	}
 
-	state = appendOneHot(state, -3, 9, t.CurrentPiece.X)
+	pieceBoard := make([]byte, 220)
+	piece := t.CurrentPiece
+	inscribeMask(
+		pieceBoard,
+		tetris.Tetrominos[piece.TetrominoType][piece.State],
+		piece.X,
+		piece.Y,
+	)
+
+	state = append(state, pieceBoard...)
+
+	nextBoard := make([]byte, 220)
+	if t.Held {
+		inscribeMask(
+			nextBoard,
+			tetris.Tetrominos[t.HoldPiece][0],
+			0,
+			0,
+		)
+	}
+
+	var x, y int
+	x = 4
+	for j := 0; j < 6; j++ {
+		pieceType := t.PieceQueue[(t.NextIndex+j)%14]
+		inscribeMask(
+			nextBoard,
+			tetris.Tetrominos[pieceType][0],
+			x,
+			y,
+		)
+
+		x += 4
+		if x > 4 {
+			x = 0
+			y += 4
+		}
+	}
+
+	state = append(state, nextBoard...)
+
+	/*state = appendOneHot(state, -3, 9, t.CurrentPiece.X)
 	state = appendOneHot(state, 0, 21, t.CurrentPiece.Y)
 	state = appendOneHot(state, 0, 3, t.CurrentPiece.State)
 	state = appendOneHot(state, 0, 6, t.CurrentPiece.TetrominoType)
@@ -54,8 +112,11 @@ func GetByteState(t *tetris.Tetris) (state []byte) {
 		state = appendOneHot(state, 0, 7, t.HoldPiece)
 	}
 
+	*/
+
 	return
 }
+
 func (t *Tetrisrl) GetByteState() (state []byte) {
 	state = GetByteState(t.Tetris)
 	return

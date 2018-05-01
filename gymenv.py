@@ -4,6 +4,10 @@ import numpy as np
 from gym import Env, spaces
 
 
+def reshape_obs(arr):
+    return arr.reshape((10, 22, 3))
+
+
 class TetrisEnv(Env):
     def __init__(self, port=3030):
         self.action_space = spaces.Discrete(7)
@@ -13,8 +17,7 @@ class TetrisEnv(Env):
         self.sock = socket.socket()
         self.sock.connect(('localhost', port))
 
-        obs = list(self.sock.recv(4096))
-        self.observation_space = spaces.MultiBinary(len(obs))
+        self.observation_space = spaces.Box(low=0, high=1, shape=(10, 22, 3), dtype=np.uint8)
 
         self.sock = None
 
@@ -26,6 +29,7 @@ class TetrisEnv(Env):
 
         obs = list(self.sock.recv(4096))
         obs = np.array(obs, dtype=np.int8)
+        obs = reshape_obs(obs)
 
         return obs
 
@@ -38,6 +42,7 @@ class TetrisEnv(Env):
         self.sock.send(bytes([0]))
         obs = list(self.sock.recv(4096))
         obs = np.asarray(obs, dtype=np.int8)
+        obs = reshape_obs(obs)
 
         return obs, reward, done, {}
 

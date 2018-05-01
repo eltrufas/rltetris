@@ -1,14 +1,20 @@
 from baselines import deepq
-from gym import TetrisEnv
+import numpy as np
+from socketserver import TCPServer, BaseRequestHandler
 
-env = TetrisEnv(5050)
 act = deepq.load("tetris.pkl")
 
+
+class ActionHandler(BaseRequestHandler):
+    def handle(self):
+        while True:
+            data = [x for x in bytes(self.request.recv(1024))]
+            print(data)
+            obs = np.asarray([data], dtype=np.int8)
+            action = bytes([act(obs)[0]])
+            self.request.sendall(action)
+
+
 while True:
-    obs, done = env.reset(), False
-    ep_reward = 0
-
-    while not done:
-        obs, reward, done, _ = env.step(act(obs[None])[0])
-
-        ep_reward += reward
+    with TCPServer(('localhost', 5050), ActionHandler) as server:
+        server.serve_forever()
